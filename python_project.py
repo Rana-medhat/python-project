@@ -5,6 +5,8 @@ out_width=[]
 out_type=[]
 IN_sign=[]
 out_sign=[]
+clk_name=[]
+rst_name=[]
 
 keyword = ["always","end", "ifnone", "or", "rpmos", "tranif1", "and", "endcase", "initial", "output", "rtran",
     "tri", "assign", "endmodule", "inout", "parameter", "rtranif0", "tri0", "begin", "endfunction",
@@ -306,32 +308,12 @@ while True:
         y=input("\nif your design is synchronous write Y if not write N:").upper()
         if y.isalpha() and (y == 'N') :  # if true write in file always sequential block which is synchronous
             F=open(design_name,'a')
-            F.write("\n\nalways @(posedge %s or negedge %s)" % (clk_name,rst_name))
-            F.write("\n   begin")
-            F.write("\n     if (!%s)" % rst_name)
-            F.write("\n       begin")
-            F.write("\n              // Reset condition")
-            F.write("\n       end")
-            F.write("\n     else")
-            F.write("\n       begin")
-            F.write("\n             // Non-reset condition")
-            F.write("\n       end")
-            F.write("\n   end")
+            F.write("\n\nalways @(posedge %s or negedge %s)\n   begin\n     if (!%s)\n       begin\n              // Reset condition\n       end\n     else\n       begin\n             // Non-reset condition\n       end\n   end "% (clk_name,rst_name,rst_name))
             F.close() 
             break
         elif y.isalpha() and (y == 'Y'):    # if true write in file always sequential block which is asynchronous
             F=open(design_name,'a')
-            F.write("\n\nalways @(posedge %s)" % clk_name)
-            F.write("\n   begin")
-            F.write("\n     if (!%s)" % rst_name)
-            F.write("\n       begin")
-            F.write("\n             // Reset condition")
-            F.write("\n       end")
-            F.write("\n     else")
-            F.write("\n       begin")
-            F.write("\n            // Non-reset condition")
-            F.write("\n       end")
-            F.write("\n   end")
+            F.write("\n\nalways @(posedge %s)\n   begin\n     if (!%s)\n       begin\n             // Reset condition\n       end\n     else\n       begin\n            // Non-reset condition\n       end\n   end" % (clk_name,rst_name))
             F.close() 
             break
         else:
@@ -364,10 +346,7 @@ if comp_num == 0:
 elif comp_num >0:
     while comp_num !=0:
         F=open(design_name,'a')
-        F.write("\n\nalways @(*)")
-        F.write("\n   begin")
-        F.write("\n       //write combinational logic circuit")
-        F.write("\n   end")
+        F.write("\n\nalways @(*)\n   begin\n       //write combinational logic circuit\n   end")
         F.close()
         comp_num=comp_num-1
                    
@@ -411,13 +390,11 @@ for i in range(len(output)):
 ########################### Instantiation and Signal Connection ##########################            
             
 T=open(testbench_name,'a')
-T.write("\n\n // instaniate design instance")
-T.write("\n\n %s Dut (" % module_name)
+T.write("\n\n // instaniate design instance\n\n %s Dut (" % module_name)
 T.close()
 if x == 'Y':
    T=open(testbench_name,'a')
-   T.write("\n   .%s(%s_TB)," % (clk_name,clk_name))
-   T.write("\n   .%s(%s_TB)," % (rst_name,rst_name))
+   T.write("\n   .%s(%s_TB),\n   .%s(%s_TB)," % (clk_name,clk_name,rst_name,rst_name))
    T.close()
 for i in range(len(Input)):
     T=open(testbench_name,'a')
@@ -449,22 +426,16 @@ if x == 'Y':
           print("invalid number,please enter value again")
     
     T=open(testbench_name,'a')
-    T.write("\n\n // Clock Generation")
-    T.write("\n\n always \n   begin \n     #%d %s_TB = !%s_TB;\n   end" % (clk_val,clk_name,clk_name))
+    T.write("\n\n // Clock Generation\n\n always \n   begin \n     #%d %s_TB = !%s_TB;\n   end" % (clk_val,clk_name,clk_name))
     T.close()
     
-
 ################################### Test cases ########################################
 
 ######################## write initial block in Testbench module ########################
 
 T=open(testbench_name,'a')
-T.write("\n\n  //Initial block")
-T.write("\n\n  initial")
-T.write("\n    begin")
-T.write('\n       $dumpfile("{}.vcd");'.format(module_name))
-T.write("\n       $dumpvars;")
-T.write("\n\n       //initial values")
+T.write("\n\n  //Initial block\n\n  initial\n    begin"'\n       $dumpfile("{}.vcd");'.format(module_name))
+T.write("\n       $dumpvars;\n\n       //initial values")
 T.close()
 for i in range(len(Input)): 
         T=open(testbench_name,'a')
@@ -472,7 +443,7 @@ for i in range(len(Input)):
         T.close()
 if x == 'Y':
     T=open(testbench_name,'a')
-    T.write("\n       %s_TB=1'b0;" % clk_name)
+    T.write("\n       %s_TB=1'b0;" % (clk_name))
     T.write("\n       %s_TB=1'b1;" % rst_name)
     T.write('\n       $display ("TEST CASE 1") ;  // test rst signal')
     T.write("\n       #%d" % clk_val)
@@ -491,36 +462,7 @@ if x == 'Y':
 
 else:
     T=open(testbench_name,'a')
-    T.write("\n\n      //write your TestCases here")
-    T.write("\n\n\n\n\n\n        #100")
-    T.write("\n        $finish;")
-    T.write("\n     end")
-    T.write("\n endmodule")
+    T.write("\n\n      //write your TestCases here\n\n\n\n\n\n        #100\n        $finish;\n     end\n endmodule")
     T.close()
     
     
-    
-    
-     
-    
-        
-
-    
-    
-   
-    
-    
-
-        
-        
-    
-           
-            
-
-        
-        
-        
-    
-                
-                
-        
